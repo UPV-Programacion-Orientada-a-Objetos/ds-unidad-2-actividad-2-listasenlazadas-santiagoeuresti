@@ -1,0 +1,612 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Paquetes necesarios
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, calc}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+% Configuración de colores para código
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Configuración de listings para código C++
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% Configuración de encabezados
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Decodificador PRT-7}
+\lhead{Listas Doblemente Enlazadas}
+\cfoot{\thepage}
+
+% Estilos TikZ
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+% Información del documento
+\title{DECODIFICADOR DE PROTOCOLO INDUSTRIAL PRT-7\\
+\large Implementación con Listas Doblemente Enlazadas}
+\author{Jose Santiago Infante Euresti}
+\date{Noviembre 2025}
+
+\begin{document}
+
+% Portada personalizada
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\huge\bfseries UNIVERSIDAD POLITÉCNICA DE VICTORIA}\\[0.5cm]
+\rule{\linewidth}{0.2mm}\\[0.4cm]
+
+{\Large\bfseries CARRERA: INGENIERÍA EN TECNOLOGÍAS DE LA INFORMACIÓN E INNOVACIÓN DIGITAL}\\[1cm]
+
+{\large\bfseries MATERIA: ESTRUCTURA DE DATOS}\\[0.5cm]
+
+{\large\bfseries ACTIVIDAD: LISTAS DOBLEMENTE ENLAZADAS}\\[2cm]
+
+{\Huge\bfseries DECODIFICADOR DE PROTOCOLO INDUSTRIAL PRT-7}\\[0.5cm]
+{\large Implementación con Estructuras de Datos Avanzadas}\\[2cm]
+
+\begin{tabular}{ll}
+\textbf{ALUMNO:} & Jose Santiago Infante Euresti \\[0.3cm]
+\textbf{PROFESOR:} & DR. SAID POLANCO MARTAGÓN \\
+& (Dr. en Artes Oscuras) \\[0.3cm]
+\textbf{FECHA:} & Noviembre de 2025 \\
+\end{tabular}
+
+\vfill
+\rule{\linewidth}{0.2mm}\\[0.4cm]
+{\large Universidad Politécnica de Victoria}\\
+{\large 2025}
+\end{titlepage}
+
+% Índice
+\tableofcontents
+\newpage
+
+% Resumen ejecutivo
+\section{Resumen Ejecutivo}
+
+El presente documento describe la implementación de un decodificador para el protocolo industrial PRT-7, desarrollado como parte de la actividad de Listas Doblemente Enlazadas en la materia de Estructura de Datos. Este proyecto integra conceptos fundamentales de programación orientada a objetos, estructuras de datos implementadas manualmente, y comunicación serial en tiempo real.
+
+\subsection{Alcance del Proyecto}
+
+El sistema implementado incluye los siguientes componentes principales:
+
+\begin{itemize}
+\item \textbf{Decodificador en C++:} Implementación completa con estructuras de datos manuales (sin STL)
+\item \textbf{Emisor Arduino/ESP32:} Generador de tramas del protocolo PRT-7
+\item \textbf{Comunicación Serial:} Sistema de comunicación bidireccional en tiempo real
+\item \textbf{Interfaz de Usuario:} Sistema de menús con múltiples modos de operación
+\item \textbf{Sistema de Build:} Configuración CMake para compilación multiplataforma
+\end{itemize}
+
+\subsection{Logros Principales}
+
+El proyecto logra con éxito:
+
+\begin{enumerate}
+\item Implementación completa de listas doblemente enlazadas sin usar la Standard Template Library (STL)
+\item Desarrollo de un sistema de decodificación de protocolo industrial funcional
+\item Integración exitosa de comunicación serial entre Arduino/ESP32 y PC
+\item Aplicación práctica de conceptos de POO avanzada (herencia, polimorfismo, encapsulación)
+\item Gestión eficiente de memoria dinámica con prevención de memory leaks
+\end{enumerate}
+
+\section{Introducción}
+
+\subsection{Contexto del Problema}
+
+En el ámbito de la ciberseguridad industrial moderna, la interceptación y análisis de protocolos de comunicación representa un desafío crítico. El presente proyecto simula un escenario real donde un competidor ha interceptado telemetría de sensores, pero no ha logrado descifrar el protocolo de transmisión.
+
+El protocolo PRT-7 (Protocol Relay Type 7) no transmite datos directamente encriptados, sino que utiliza un sistema de instrucciones para ensamblar mensajes ocultos. Esta aproximación, similar a los sistemas de cifrado históricos como la máquina Enigma, requiere no solo interceptar las transmisiones, sino también comprender el mecanismo de ensamblaje dinámico del mensaje.
+
+\subsection{Objetivos del Proyecto}
+
+\subsubsection{Objetivos Generales}
+
+\begin{enumerate}
+\item Implementar estructuras de datos fundamentales (listas doblemente enlazadas y circulares) sin dependencias de bibliotecas externas
+\item Desarrollar un sistema completo de comunicación y decodificación de protocolo industrial
+\item Aplicar principios de ingeniería de software en un contexto práctico
+\end{enumerate}
+
+\subsubsection{Objetivos Específicos}
+
+\begin{enumerate}
+\item Diseñar e implementar una jerarquía de clases usando herencia y polimorfismo
+\item Crear una lista doblemente enlazada para almacenamiento secuencial de datos
+\item Implementar una lista circular como mecanismo de mapeo dinámico (rotor)
+\item Establecer comunicación serial robusta entre microcontrolador y PC
+\item Desarrollar un parser de protocolo tolerante a ruido y errores
+\item Implementar gestión de memoria segura sin fugas (memory leaks)
+\item Crear una interfaz de usuario intuitiva con múltiples modos de operación
+\end{enumerate}
+
+\subsection{Justificación Académica}
+
+Este proyecto integra múltiples conceptos fundamentales de ciencias de la computación:
+
+\begin{itemize}
+\item \textbf{Estructuras de Datos:} Implementación práctica de listas enlazadas en escenarios reales
+\item \textbf{POO Avanzada:} Uso de herencia, polimorfismo y encapsulación para diseño modular
+\item \textbf{Gestión de Memoria:} Manejo explícito de memoria dinámica en C++
+\item \textbf{Comunicación Serial:} Integración hardware-software para IoT
+\item \textbf{Análisis de Algoritmos:} Estudio de complejidad computacional
+\end{itemize}
+
+\subsection{Alcance y Limitaciones}
+
+\subsubsection{Dentro del Alcance}
+
+\begin{itemize}
+\item Implementación completa del decodificador PRT-7
+\item Soporte para Windows (Win32 API para serial)
+\item Modo simulación sin hardware
+\item Modo manual para pruebas
+\item Modo serial en tiempo real
+\item Documentación Doxygen
+\end{itemize}
+
+\subsubsection{Fuera del Alcance}
+
+\begin{itemize}
+\item Soporte nativo para Linux/macOS (requiere adaptación de la capa serial)
+\item Interfaz gráfica (GUI)
+\item Encriptación real de datos
+\item Múltiples canales de comunicación simultáneos
+\item Persistencia de mensajes decodificados
+\end{itemize}
+
+\section{Marco Teórico}
+
+\subsection{Listas Doblemente Enlazadas}
+
+\subsubsection{Definición y Características}
+
+Una lista doblemente enlazada es una estructura de datos lineal donde cada elemento (nodo) contiene:
+
+\begin{itemize}
+\item \textbf{Dato:} Información almacenada (en este caso, char)
+\item \textbf{Puntero siguiente:} Referencia al nodo posterior
+\item \textbf{Puntero anterior:} Referencia al nodo previo
+\end{itemize}
+
+Esta estructura permite navegación bidireccional, facilitando operaciones como inserción y eliminación en cualquier posición con complejidad constante si se tiene referencia al nodo.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=3cm, auto]
+% Nodos
+\node[draw, rectangle, minimum height=1.5cm, minimum width=2.5cm] (node1) {
+    \begin{tabular}{c}
+    prev: NULL \\
+    dato: 'H' \\
+    next: $\rightarrow$
+    \end{tabular}
+};
+\node[draw, rectangle, minimum height=1.5cm, minimum width=2.5cm, right of=node1] (node2) {
+    \begin{tabular}{c}
+    prev: $\leftarrow$ \\
+    dato: 'O' \\
+    next: $\rightarrow$
+    \end{tabular}
+};
+\node[draw, rectangle, minimum height=1.5cm, minimum width=2.5cm, right of=node2] (node3) {
+    \begin{tabular}{c}
+    prev: $\leftarrow$ \\
+    dato: 'L' \\
+    next: NULL
+    \end{tabular}
+};
+
+% Flechas
+\draw[->, thick] ([yshift=3mm]node1.east) -- ([yshift=3mm]node2.west) node[midway, above] {\footnotesize siguiente};
+\draw[->, thick] ([yshift=-3mm]node2.west) -- ([yshift=-3mm]node1.east) node[midway, below] {\footnotesize anterior};
+\draw[->, thick] ([yshift=3mm]node2.east) -- ([yshift=3mm]node3.west);
+\draw[->, thick] ([yshift=-3mm]node3.west) -- ([yshift=-3mm]node2.east);
+
+% Cabeza y Cola
+\node[above=0.5cm of node1] (cabeza) {\textbf{cabeza}};
+\draw[->, thick] (cabeza) -- (node1);
+\node[above=0.5cm of node3] (cola) {\textbf{cola}};
+\draw[->, thick] (cola) -- (node3);
+\end{tikzpicture}
+\caption{Estructura de Lista Doblemente Enlazada con punteros cabeza y cola}
+\end{figure}
+
+\subsubsection{Análisis de Complejidad}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Operación} & \textbf{Complejidad Temporal} & \textbf{Justificación} \\ 
+\midrule
+Insertar al inicio & $O(1)$ & Acceso directo a cabeza \\
+Insertar al final & $O(1)$ & Acceso directo a cola \\
+Eliminar al inicio & $O(1)$ & Acceso directo a cabeza \\
+Eliminar al final & $O(1)$ & Acceso directo a cola \\
+Búsqueda & $O(n)$ & Recorrido secuencial \\
+Acceso por índice & $O(n)$ & Sin acceso aleatorio \\
+\bottomrule
+\end{tabular}
+\caption{Complejidad de Operaciones en Lista Doblemente Enlazada}
+\end{table}
+
+\subsubsection{Ventajas sobre Listas Simples}
+
+\begin{enumerate}
+\item \textbf{Navegación bidireccional:} Permite recorrer la lista en ambos sentidos
+\item \textbf{Eliminación eficiente:} No requiere mantener referencia al nodo anterior
+\item \textbf{Inserción flexible:} Facilita inserción antes de un nodo dado
+\item \textbf{Implementación de estructuras complejas:} Base para listas circulares, deques, etc.
+\end{enumerate}
+
+\subsection{Listas Circulares}
+
+\subsubsection{Definición}
+
+Una lista circular es una variante donde el último nodo apunta al primero, formando un ciclo. En este proyecto, se usa como lista circular doblemente enlazada, donde:
+
+\begin{itemize}
+\item El nodo \texttt{cola} apunta al nodo \texttt{cabeza} (siguiente)
+\item El nodo \texttt{cabeza} apunta al nodo \texttt{cola} (anterior)
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=2.5cm]
+\node[draw, circle, minimum size=1.5cm] (a) {A};
+\node[draw, circle, minimum size=1.5cm, right of=a] (b) {B};
+\node[draw, circle, minimum size=1.5cm, below of=b] (c) {C};
+\node[draw, circle, minimum size=1.5cm, left of=c] (z) {Z};
+
+\draw[->, thick] (a) to[bend left=20] (b);
+\draw[->, thick] (b) to[bend left=20] (c);
+\draw[->, thick] (c) to[bend left=20] (z);
+\draw[->, thick] (z) to[bend left=20] (a);
+
+\draw[->, thick, dashed] (b) to[bend left=20] (a);
+\draw[->, thick, dashed] (c) to[bend left=20] (b);
+\draw[->, thick, dashed] (z) to[bend left=20] (c);
+\draw[->, thick, dashed] (a) to[bend left=20] (z);
+
+\node[above=0.3cm of a] {\textbf{cabeza}};
+\end{tikzpicture}
+\caption{Lista Circular Doblemente Enlazada (líneas sólidas: siguiente, líneas punteadas: anterior)}
+\end{figure}
+
+\subsubsection{Aplicación en Cifrado}
+
+El concepto de lista circular se utiliza en criptografía clásica, específicamente en sistemas similares al Cifrado César. En este proyecto, el \textbf{RotorDeMapeo} implementa un disco de 26 letras (A-Z) que puede rotar, cambiando el mapeo entre caracteres de entrada y salida.
+
+\textbf{Ejemplo de Rotación:}
+
+\begin{align*}
+\text{Posición inicial:} & \quad \text{A B C D E F ... Z} \\
+\text{Rotar +3:} & \quad \text{D E F G H I ... C} \\
+\text{Mapeo:} & \quad \text{A} \rightarrow \text{D}, \quad \text{B} \rightarrow \text{E}, \quad \text{etc.}
+\end{align*}
+
+\subsection{Protocolo PRT-7}
+
+\subsubsection{Especificación del Protocolo}
+
+El protocolo PRT-7 define dos tipos de tramas textuales:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llp{7cm}@{}}
+\toprule
+\textbf{Tipo} & \textbf{Formato} & \textbf{Descripción} \\ 
+\midrule
+LOAD & \texttt{L,X} & Contiene un fragmento de datos (carácter X). El carácter se decodifica según el estado actual del rotor y se almacena en la lista de carga. \\
+MAP & \texttt{M,N} & Instrucción de rotación. N es un entero que indica las posiciones de rotación (positivo o negativo). \\
+\bottomrule
+\end{tabular}
+\caption{Tipos de Tramas del Protocolo PRT-7}
+\end{table}
+
+\subsubsection{Gramática del Protocolo}
+
+La gramática formal del protocolo puede expresarse como:
+
+\begin{align*}
+\text{Trama} &::= \text{TramaLoad} \mid \text{TramaMap} \\
+\text{TramaLoad} &::= \text{'L'} \text{','} \text{Caracter} \\
+\text{TramaMap} &::= \text{'M'} \text{','} \text{Entero} \\
+\text{Caracter} &::= \text{[A-Z]} \mid \text{' '} \mid \text{[otros caracteres imprimibles]} \\
+\text{Entero} &::= ['-']? [0-9]+
+\end{align*}
+
+\subsubsection{Ejemplo de Flujo de Decodificación}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Paso} & \textbf{Trama} & \textbf{Rotación Actual} & \textbf{Resultado} \\ 
+\midrule
+1 & L,H & 0 & 'H' $\rightarrow$ 'H', Lista: [H] \\
+2 & L,O & 0 & 'O' $\rightarrow$ 'O', Lista: [H][O] \\
+3 & M,2 & 0 $\rightarrow$ +2 & Rotor rota +2 posiciones \\
+4 & L,A & +2 & 'A' $\rightarrow$ 'C', Lista: [H][O][C] \\
+5 & M,-2 & +2 $\rightarrow$ 0 & Rotor rota -2 posiciones \\
+6 & L,L & 0 & 'L' $\rightarrow$ 'L', Lista: [H][O][C][L] \\
+\bottomrule
+\end{tabular}
+\caption{Ejemplo de Decodificación Paso a Paso}
+\end{table}
+
+\subsection{Programación Orientada a Objetos}
+
+\subsubsection{Herencia y Polimorfismo}
+
+El diseño del sistema utiliza una jerarquía de clases basada en una clase abstracta \texttt{TramaBase}, permitiendo polimorfismo en tiempo de ejecución.
+
+\textbf{Beneficios del diseño polimórfico:}
+
+\begin{itemize}
+\item \textbf{Extensibilidad:} Nuevos tipos de tramas pueden añadirse sin modificar el código existente
+\item \textbf{Uniformidad:} Todas las tramas se procesan a través de la misma interfaz
+\item \textbf{Mantenibilidad:} Cambios en la lógica de procesamiento se localizan en clases específicas
+\end{itemize}
+
+\subsubsection{Destructores Virtuales}
+
+El uso de destructores virtuales es \textbf{crítico} en jerarquías polimórficas. Sin ellos, al hacer \texttt{delete} sobre un puntero a clase base que apunta a objeto derivado, solo se llama el destructor de la base, causando memory leaks.
+
+\begin{lstlisting}[language=C++, caption=Importancia del Destructor Virtual]
+// SIN destructor virtual - INCORRECTO
+class TramaBase {
+public:
+    ~TramaBase() { /* ... */ }  // NO virtual
+};
+class TramaLoad : public TramaBase {
+private:
+    char* buffer;
+public:
+    TramaLoad() { buffer = new char[100]; }
+    ~TramaLoad() { delete[] buffer; }  // NUNCA se llama
+};
+
+// USO:
+TramaBase* t = new TramaLoad();
+delete t;  // Solo llama ~TramaBase(), buffer no se libera = MEMORY LEAK
+
+// CON destructor virtual - CORRECTO
+class TramaBase {
+public:
+    virtual ~TramaBase() { /* ... */ }  // VIRTUAL
+};
+// Ahora delete t; llama ~TramaLoad() primero, luego ~TramaBase()
+\end{lstlisting}
+
+\subsection{Comunicación Serial}
+
+\subsubsection{Protocolos de Comunicación}
+
+La comunicación serial UART (Universal Asynchronous Receiver-Transmitter) utiliza los siguientes parámetros:
+
+\begin{itemize}
+\item \textbf{Baud Rate:} Velocidad de transmisión (típicamente 9600, 115200 bps)
+\item \textbf{Data Bits:} Número de bits por carácter (comúnmente 8)
+\item \textbf{Parity:} Bit de paridad para detección de errores (None, Even, Odd)
+\item \textbf{Stop Bits:} Bits de finalización (1 o 2)
+\end{itemize}
+
+\subsubsection{Configuración Utilizada}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\ 
+\midrule
+Baud Rate & 115200 bps \\
+Data Bits & 8 \\
+Parity & None \\
+Stop Bits & 1 \\
+Flow Control & None \\
+\bottomrule
+\end{tabular}
+\caption{Configuración Serial del Sistema}
+\end{table}
+
+\section{Arquitectura del Sistema}
+
+\subsection{Visión General}
+
+El sistema PRT-7 se compone de dos subsistemas principales que se comunican a través de un canal serial:
+
+\begin{enumerate}
+\item \textbf{Emisor (Arduino/ESP32):} Genera y transmite tramas del protocolo
+\item \textbf{Decodificador (PC):} Recibe, parsea, procesa y decodifica las tramas
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=4cm, auto]
+% Nodos principales
+\node[draw, rectangle, minimum height=3cm, minimum width=3.5cm, fill=blue!20] (arduino) {
+    \textbf{Arduino/ESP32}\\[0.3cm]
+    - Generador de Tramas\\
+    - Buffer Serial TX\\
+    - Temporizador
+};
+
+\node[draw, rectangle, minimum height=3cm, minimum width=3.5cm, fill=green!20, right of=arduino] (pc) {
+    \textbf{PC (Decodificador)}\\[0.3cm]
+    - Parser de Tramas\\
+    - Procesador\\
+    - Gestor de Memoria
+};
+
+% Conexión serial
+\draw[<->, ultra thick] (arduino) -- node[above] {Serial USB} node[below] {115200 baud} (pc);
+
+% Componentes internos Arduino
+\node[draw, rectangle, minimum height=0.8cm, minimum width=2.5cm, below=0.5cm of arduino] (gen) {\footnotesize Generador PRT-7};
+
+% Componentes internos PC
+\node[draw, rectangle, minimum height=0.8cm, minimum width=2.5cm, below left=0.5cm and -0.5cm of pc] (parser) {\footnotesize Parser};
+\node[draw, rectangle, minimum height=0.8cm, minimum width=2.5cm, below=0.5cm of pc] (proc) {\footnotesize Procesador};
+\node[draw, rectangle, minimum height=0.8cm, minimum width=2.5cm, below right=0.5cm and -0.5cm of pc] (mem) {\footnotesize ListaDeCarga};
+
+\draw[->] (pc.south) -- (parser);
+\draw[->] (pc.south) -- (proc);
+\draw[->] (pc.south) -- (mem);
+\end{tikzpicture}
+\caption{Arquitectura General del Sistema PRT-7}
+\end{figure}
+
+\section{Conclusiones}
+
+\subsection{Objetivos Alcanzados}
+
+El proyecto ha cumplido exitosamente con todos los objetivos planteados:
+
+\begin{enumerate}
+\item \textbf{Implementación de Estructuras de Datos:} 
+\begin{itemize}
+\item Lista doblemente enlazada completamente funcional sin usar STL
+\item Lista circular para rotor de mapeo con rotación bidireccional
+\item Gestión eficiente de memoria con prevención de leaks
+\end{itemize}
+
+\item \textbf{Sistema Funcional Completo:}
+\begin{itemize}
+\item Comunicación bidireccional Arduino-PC en tiempo real
+\item Parser robusto tolerante a errores
+\item Interfaz de usuario con múltiples modos de operación
+\end{itemize}
+
+\item \textbf{Arquitectura Robusta:}
+\begin{itemize}
+\item Diseño modular con separación de responsabilidades
+\item Uso correcto de POO (herencia, polimorfismo, encapsulación)
+\item Destructores virtuales para jerarquía de clases
+\end{itemize}
+
+\item \textbf{Sistema de Build Profesional:}
+\begin{itemize}
+\item Configuración CMake multiplataforma
+\item Scripts de compilación automatizados
+\item Documentación Doxygen integrada
+\end{itemize}
+\end{enumerate}
+
+\subsection{Aprendizajes Técnicos}
+
+\subsubsection{Estructuras de Datos}
+
+\begin{itemize}
+\item \textbf{Importancia del manejo manual de memoria:} La implementación sin STL demostró la complejidad real de la gestión de memoria dinámica y la necesidad de diseño cuidadoso para evitar leaks.
+
+\item \textbf{Trade-offs de complejidad:} La elección entre simplicidad de código y eficiencia algorítmica requiere análisis caso por caso. Por ejemplo, mantener puntero \texttt{cola} añade complejidad pero reduce inserción de $O(n)$ a $O(1)$.
+
+\item \textbf{Listas circulares:} Son ideales para estructuras cíclicas como rotores, pero requieren cuidado especial en destrucción para evitar loops infinitos.
+\end{itemize}
+
+\subsubsection{Programación Orientada a Objetos}
+
+\begin{itemize}
+\item \textbf{Destructores virtuales son críticos:} Sin ellos, el polimorfismo en tiempo de ejecución causa memory leaks inevitables. Esta es una de las fuentes más comunes de bugs en C++.
+
+\item \textbf{RAII (Resource Acquisition Is Initialization):} Adquirir recursos en constructor y liberarlos en destructor garantiza limpieza automática, incluso ante excepciones.
+
+\item \textbf{Separación de interfaces:} Clases base abstractas permiten extensibilidad sin modificar código existente (Open-Closed Principle).
+\end{itemize}
+
+\subsubsection{Comunicación Serial}
+
+\begin{itemize}
+\item \textbf{Tolerancia a ruido:} Los sistemas reales siempre tienen ruido. Un parser robusto debe validar rigurosamente antes de procesar.
+
+\item \textbf{Timeouts son esenciales:} Sin ellos, un dispositivo desconectado puede bloquear la aplicación indefinidamente.
+
+\item \textbf{Configuración de parámetros:} Baud rate, paridad, y stop bits deben coincidir exactamente entre emisor y receptor.
+\end{itemize}
+
+\subsubsection{Ingeniería de Software}
+
+\begin{itemize}
+\item \textbf{CMake como estándar:} Facilita portabilidad y es el estándar de facto en C++ moderno.
+
+\item \textbf{Documentación continua:} Usar Doxygen desde el inicio mantiene la documentación sincronizada con el código.
+
+\item \textbf{Testing incremental:} Probar cada componente individualmente antes de integración reduce debugging.
+\end{itemize}
+
+\subsection{Reflexión Final}
+
+Este proyecto ha demostrado que los conceptos fundamentales de estructuras de datos y programación orientada a objetos tienen aplicaciones directas y críticas en sistemas reales. La implementación manual de listas enlazadas, aunque más compleja que usar STL, proporciona una comprensión profunda de los mecanismos subyacentes y las consideraciones de rendimiento.
+
+La integración de hardware y software, combinada con el diseño de un protocolo de comunicación funcional, ofrece una experiencia educativa completa que va más allá de la teoría académica. Los desafíos encontrados (memory leaks, ruido serial, bugs de módulo negativo) son representativos de problemas reales en ingeniería de software, y las soluciones implementadas reflejan best practices de la industria.
+
+El sistema PRT-7 desarrollado no solo cumple con los requisitos académicos, sino que establece una base sólida para proyectos más ambiciosos en IoT, sistemas embebidos, y comunicaciones industriales. La arquitectura modular y bien documentada facilita futuras extensiones y mejoras, convirtiendo este proyecto en un portafolio valioso para demostrar competencias en desarrollo de software profesional.
+
+\section{Referencias}
+
+\begin{enumerate}
+\item Weiss, M. A. (2014). \textit{Data Structures and Algorithm Analysis in C++}. 4th Edition. Pearson Education. ISBN: 978-0-13-284737-7.
+
+\item Stroustrup, B. (2013). \textit{The C++ Programming Language}. 4th Edition. Addison-Wesley Professional. ISBN: 978-0-321-56384-2.
+
+\item Cormen, T. H., Leiserson, C. E., Rivest, R. L., \& Stein, C. (2009). \textit{Introduction to Algorithms}. 3rd Edition. MIT Press. ISBN: 978-0-262-03384-8.
+
+\item Arduino Documentation. (2025). \textit{Serial Communication Tutorial}. Recuperado de \url{https://www.arduino.cc/reference/en/language/functions/communication/serial/}
+
+\item Microsoft Documentation. (2025). \textit{Communications Resources - Win32 apps}. Recuperado de \url{https://docs.microsoft.com/en-us/windows/win32/devio/communications-resources}
+
+\item Meyers, S. (2014). \textit{Effective Modern C++}. O'Reilly Media. ISBN: 978-1-491-90399-5.
+
+\item Gamma, E., Helm, R., Johnson, R., \& Vlissides, J. (1994). \textit{Design Patterns: Elements of Reusable Object-Oriented Software}. Addison-Wesley. ISBN: 978-0-201-63361-0.
+
+\item CMake Documentation. (2025). \textit{CMake Reference Documentation}. Recuperado de \url{https://cmake.org/documentation/}
+
+\item Doxygen Manual. (2025). \textit{Doxygen Manual}. Recuperado de \url{https://www.doxygen.nl/manual/}
+
+\item Espressif Systems. (2025). \textit{ESP32 Technical Reference Manual}. Recuperado de \url{https://www.espressif.com/en/products/socs/esp32}
+\end{enumerate}
+
+\end{document}
